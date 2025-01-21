@@ -3,21 +3,40 @@ import * as RadioGroup from "@radix-ui/react-radio-group";
 import { TextArea } from "@radix-ui/themes"
 import { Button } from "./button";
 import { useRef, useState } from "react";
+import { cva } from 'class-variance-authority'
 
 interface QuestionProps {
     id: string;
     question_type: "multiplechoice" | "open";
     question_text: string;
-    initialValue?:string;
+    initialValue?: string;
     choices?: Choice[]
     locked: boolean,
     handleSubmit: (questionId: string, answer: string, index: number) => void;
     index: number;
     answerResult?: boolean;
-    totalQuestions:number;
+    totalQuestions: number;
 }
 
 function QuestionComponent({ id, question_type, question_text, initialValue, choices, locked, handleSubmit, index, answerResult, totalQuestions }: QuestionProps) {
+
+    const activeQuestion = cva(
+        "border",
+        {
+            variants: {
+                disabled: {
+                    true: "pointer-events-none",
+                    false: ''
+                },
+                answerStatus:{
+                    correct: "bg-green-100", 
+                    incorrect: "bg-red-100", 
+                    review:"bg-yellow-100", 
+                    unanswered:"bg-white"
+                }
+            }
+        }
+    )
 
     const [selectedRadio, setSelectedRadio] = useState<string | undefined>()
 
@@ -63,17 +82,23 @@ function QuestionComponent({ id, question_type, question_text, initialValue, cho
         handleSubmit(id, submittedValue, index)
     }
 
+    const correct = answerResult !== undefined && answerResult
+    const incorrect = answerResult !== undefined && !answerResult;
+    const needsReview = answerResult === undefined && locked;
+
+    const answerStatus = correct?"correct":incorrect?"incorrect":needsReview?"review":"unanswered";
+
     return (
-        <div className="border" id={id} aria-disabled={locked} key={id}>
-            <span className="font-bold">{index+1}/{totalQuestions}</span>
-            {answerResult !== undefined && answerResult && <p className="text-green-800 font-bold">Correct</p>}
-            {answerResult !== undefined && !answerResult && <p className="text-red-800 font-bold">Incorrect</p>}
-            {answerResult === undefined && locked && <p className="text-yellow-800 font-bold">Awaiting Review</p>}
+        <div className={activeQuestion({disabled: locked, answerStatus: answerStatus})} id={id} aria-disabled={locked} key={id}>
+            <span className="font-bold">{index + 1}/{totalQuestions}</span>
+            {correct && <p className="text-green-800 font-bold">Correct</p>}
+            { incorrect && <p className="text-red-800 font-bold">Incorrect</p>}
+            { needsReview && <p className="text-yellow-800 font-bold">Awaiting Review</p>}
             <form onSubmit={handleFormSubmit}>
                 <p>{question_text}</p>
                 {question_type == "multiplechoice" && choices && radioQuestion(choices)}
                 {question_type == "open" && openQuestion()}
-                <Button className="mt-2" type="submit" disabled={locked}>Submit</Button>
+                <Button className={`mt-2 ${locked?"bg-slate-400":''}`} type="submit" disabled={locked}>Submit</Button>
             </form>
         </div>
     )
