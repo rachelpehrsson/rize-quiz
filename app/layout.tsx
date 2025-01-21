@@ -1,3 +1,4 @@
+"use client";
 import '@/app/ui/global.css';
 import SideNav from './ui/dashboard/sidenav';
 

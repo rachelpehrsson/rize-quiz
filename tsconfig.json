@@ -28,8 +28,8 @@
     "**/*.ts",
     "**/*.tsx",
     ".next/types/**/*.ts",
-    "app/lib/placeholder-data.ts",
+    "app/lib/mockdata.ts",
     "scripts/seed.js"
-  ],
+, "app/quiz/[id]"  ],
   "exclude": ["node_modules"]
 }
